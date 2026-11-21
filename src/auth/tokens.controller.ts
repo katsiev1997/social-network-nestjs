@@ -6,10 +6,12 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Public, TokenService } from '@nestjs/authentication';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CredentialsService } from './credentials.service.js';
 import { RefreshTokenDto, SignInDto } from './dto/auth.dto.js';
 
 // Вход по JWT: access-токен + одноразовый refresh-токен (для мобильных клиентов)
+@ApiTags('auth')
 @Public()
 @Controller('auth/token')
 export class TokensController {
@@ -18,6 +20,7 @@ export class TokensController {
     private readonly tokenService: TokenService,
   ) {}
 
+  @ApiOperation({ summary: 'Выдать пару access/refresh JWT' })
   @Post()
   @HttpCode(200)
   async issue(@Body() body: SignInDto) {
@@ -37,6 +40,7 @@ export class TokensController {
 
   // Меняет refresh-токен на новую пару. Повторное использование старого токена
   // отзывает всю цепочку; RefreshTokenError превращается в 401.
+  @ApiOperation({ summary: 'Обменять refresh-токен на новую пару' })
   @Post('refresh')
   @HttpCode(200)
   refresh(@Body() body: RefreshTokenDto) {
@@ -44,6 +48,7 @@ export class TokensController {
   }
 
   // Выход одного устройства. Ответ всегда 204, чтобы не раскрывать, существовал ли токен.
+  @ApiOperation({ summary: 'Отозвать refresh-токен' })
   @Post('revoke')
   @HttpCode(204)
   async revoke(@Body() body: RefreshTokenDto) {
